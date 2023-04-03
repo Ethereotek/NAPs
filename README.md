@@ -1,2 +1,1 @@
-# NAPs
- Named Operators and Parameters for TouchDesigner
+# NAPs - Named Operators and Parameters for TouchDesigner
