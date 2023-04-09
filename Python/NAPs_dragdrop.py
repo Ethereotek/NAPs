@@ -22,7 +22,8 @@ validName = r'^[A-z_][A-z_0-9]*$' # pattern to validate alias string
 # 		ui.messageBox("ERROR: Invalid Shortcut",message, buttons=["OK"])
 # 		return -1
 
-namedOpCallback = op.NAPs.AddNamedOperator
+# namedOpCallback = op.NAPs.AddNamedOperator
+namedOpCallback = op.NAPs.ext.NamedElements.addOperatorFromPopup
 namedParCallback = op.NAPs.AddNamedParameter
 
 

@@ -67,9 +67,8 @@ lightCoalRollover = [0.25625, 0.27578, 0.27578, 1]
 darkCoal = [0.07812, 0.09765, 0.09765, 1]
 dullWhite = [0.95703, 0.95703, 0.95703, 1]
 
-named_operators = op("named_operators_out")
 named_parameters = op("named_parameters_out")
-# named_ops_dict = op.NAPs.storage["named_parameters"]
+named_ops_dict = op.NAPs.storage["named_parameters"]
 
 columnHeaders = ["NAME", "PATH", "DELETE"]
 columnWidths = [200, 300, 100]
@@ -77,7 +76,7 @@ columnWidths = [200, 300, 100]
 def onInitCell(comp, row, col, attribs):
 
 	if row > 0:
-		attribs.text = named_operators[row, col]
+		attribs.text = named_parameters[row, col]
 		if col == 2:
 			attribs.text = "delete"
 	elif row == 0:
@@ -146,7 +145,7 @@ def onSelect(comp, startRow, startCol, startCoords, endRow, endCol, endCoords, s
 			if startCol == 2:
 				# prevColor = comp.cellAttribs[startRow, startCol].bgColor
 				comp.cellAttribs[startRow, startCol].bgColor = [0.8, 0.2, 0.2, 1]
-				op_name = named_operators[startRow, 0].val
+				op_name = named_parameters[startRow, 0].val
 				op.NAPs.DeleteNamedOperator(op_name)
 	
 	if end:
@@ -163,5 +162,5 @@ def onFocus(comp, row, col, prevRow, prevCol):
 
 def onEdit(comp, row, col, val):
 	
-	current_name = named_operators[row, col].val
+	current_name = named_parameters[row, col].val
 	op.NAPs.RenameOperator(current_name, val)
