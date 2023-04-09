@@ -49,53 +49,61 @@ class NamedElements:
 		op.NAPs.storage["named_parameters"].clear()
 		self.namedParametersDAT.clear()
 	
-	def AddNamedOperator(self, args):
-			# args is passed in from the popDialog function
+	def validateOperatorAddition(self):
 
-			# operator is reference to operator object
-
-		operator = args["details"]["operator"]
-		name = args["enteredText"]
-		button = args["button"]
-
-			# if the name is empty, or button pressed was not "OK", return function
-		if not name:
-			print("empty name")
-			return -1
-		
-		if button != "OK":
-			print("Goodbye")
-			return -1
-		
-			# otherwise:
-			# check if name already exists
-		if name in self.named_operators:
-			message = f'The name `{name}` already exists.'
+		if self.name in self.named_operators:
+			message = f'The name `{self.name}` already exists.'
 			ui.messageBox("ERROR: Duplicate OP Names", message, buttons=["OK"])
-			return -1
+			return False
 
 			# check if name is valid pattern
-		if re.match(self.validName, name):
-
-				# add to dict and update table for user viewability AND to populate menu
-			self.named_operators.update({name:operator})
-			self.namedOperatorsDAT.appendRow([name, operator.path])
-			return 0
+		if re.match(self.validName, self.name):
+			return True
 		else:
 				# inform user via a popup message box
 			message = "OP names can only contain letters, numbers and underscores, and cannot start with a number.\nPlease enter a different name."
 			ui.messageBox("ERROR: Invalid Operator Name",message, buttons=["OK"])
-			return -1
+			return False
+
+	def NameOperator(self, operator, name):
+		self.operator = operator
+		self.name = name
+
+		valid = self.validateOperatorAddition()
+
+		if valid:
+				# add to dict and update table for user viewability AND to populate menu
+			self.named_operators.update({name:operator})
+			self.namedOperatorsDAT.appendRow([name, operator.path])
+			return 1
 		
-	def DeleteNamedOperator(self, op_name):
-			# IF name exists, remove from dict, remove from table DAT
-		if op_name in self.named_operators:
-			self.named_operators.pop(op_name)
-			self.namedOperatorsDAT.deleteRow(op_name)
-			return 0
 		else:
 			return -1
-	
+
+	def addOperatorFromPopup(self, args):
+			# args is passed in from the popDialog function
+
+			# operator is reference to operator object
+
+		self.operator = args["details"]["operator"]
+		self.name = args["enteredText"]
+		button = args["button"]
+
+		if button != "OK":
+			print("Goodbye")
+			return -1
+		
+			# it's possible to call self.NameOperator here instead
+			# and pass the return up the stack, for now this is easier to understand
+		valid = self.validateOperatorAddition()
+
+		if valid:
+			self.named_operators.update({self.name:self.operator})
+			self.namedOperatorsDAT.appendRow([self.name, self.operator.path])
+			return 1
+		else:
+			return -1
+
 	def RenameOperator(self, op_curr_name, op_new_name):
 		# get the operator object from dictionary
 		# `args` is a dictionary normally passed from the PopDialog to AddNamedOperator
