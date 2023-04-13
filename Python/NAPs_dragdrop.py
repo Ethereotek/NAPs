@@ -24,10 +24,42 @@ validName = r'^[A-z_][A-z_0-9]*$' # pattern to validate alias string
 
 # namedOpCallback = op.NAPs.AddNamedOperator
 namedOpCallback = op.NAPs.ext.NamedElements.addOperatorFromPopup
-namedParCallback = op.NAPs.AddNamedParameter
+namedParCallback = op.NAPs.ext.NamedElements.addParameterFromPopup
 
 
 def onHoverStartGetAccept(comp, info):
+	dragItems = info['dragItems']
+
+	# Highlights the list that is being dragged into
+	# If the type being dragged is accepted by the list, the border turns green
+	# Otherwise, the border turns red
+	if "hover_safe" in comp.tags:
+		pass
+	else:
+		
+		comp.par.leftborder = 1
+		comp.par.rightborder = 1
+		comp.par.topborder = 1
+		comp.par.bottomborder = 1
+		if comp.path.split('/')[-1] == 'named_pars_list':
+
+			if isinstance(dragItems[0], ParGroup) or isinstance(dragItems[0], Par):
+				comp.par.borderar = 0
+				comp.par.borderab = 0
+				comp.par.borderag = 1
+			else:
+				comp.par.borderar = 1
+				comp.par.borderab = 0
+				comp.par.borderag = 0
+		if comp.path.split('/')[-1] == 'named_ops_list':
+			if isinstance(dragItems[0], OP):
+				comp.par.borderar = 0
+				comp.par.borderab = 0
+				comp.par.borderag = 1
+			else:
+				comp.par.borderar = 1
+				comp.par.borderab = 0
+				comp.par.borderag = 0
 	"""
 	Called when comp needs to know if dragItems are acceptable as a drop.
 
@@ -44,6 +76,16 @@ def onHoverStartGetAccept(comp, info):
 	return True # accept what is being dragged
 
 def onHoverEnd(comp, info):
+	if "hover_safe" in comp.tags:
+		pass
+	else:
+		comp.par.borderar = 1
+		comp.par.borderab = 1
+		comp.par.borderag = 1
+		comp.par.leftborder = 0
+		comp.par.rightborder = 0
+		comp.par.topborder = 0
+		comp.par.bottomborder = 0
 	"""
 	Called when dragItems leave comp's hover area.
 
@@ -74,7 +116,8 @@ def onDropGetResults(comp, info):
 			callback=namedOpCallback
 		)
 		# print("called add")
-	elif Par in dragItem_mro:
+	if isinstance(dragItem, Par) or isinstance(dragItem, ParGroup):
+	# elif Par in dragItem_mro:
 		param = dragItem
 		op.TDResources.PopDialog.OpenDefault(
 			title="Add named parameter",
@@ -88,6 +131,7 @@ def onDropGetResults(comp, info):
 		# print("par in mro")
 	
 	elif ParGroup in dragItem_mro:
+		print(info)
 		print("pargroup in mro")
 	else:
 		print(False)

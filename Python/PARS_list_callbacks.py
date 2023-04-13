@@ -70,7 +70,7 @@ dullWhite = [0.95703, 0.95703, 0.95703, 1]
 named_parameters = op("named_parameters_out")
 named_ops_dict = op.NAPs.storage["named_parameters"]
 
-columnHeaders = ["NAME", "PATH", "DELETE"]
+columnHeaders = ["NAME", "OWNER", "DELETE"]
 columnWidths = [200, 300, 100]
 
 def onInitCell(comp, row, col, attribs):
