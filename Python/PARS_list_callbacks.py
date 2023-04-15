@@ -146,7 +146,7 @@ def onSelect(comp, startRow, startCol, startCoords, endRow, endCol, endCoords, s
 				# prevColor = comp.cellAttribs[startRow, startCol].bgColor
 				comp.cellAttribs[startRow, startCol].bgColor = [0.8, 0.2, 0.2, 1]
 				op_name = named_parameters[startRow, 0].val
-				op.NAPs.DeleteNamedOperator(op_name)
+				op.NAPs.DeleteNamedParameter(op_name)
 	
 	if end:
 		try:
@@ -163,4 +163,4 @@ def onFocus(comp, row, col, prevRow, prevCol):
 def onEdit(comp, row, col, val):
 	
 	current_name = named_parameters[row, col].val
-	op.NAPs.RenameOperator(current_name, val)
+	op.NAPs.RenameParameter(current_name, val)

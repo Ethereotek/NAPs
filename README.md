@@ -1,8 +1,8 @@
-# NAPs - Named Operators for TouchDesigner
+# NAPs - Named Operators & Parameters for TouchDesigner
 
 ## Introduction
 
-NAPs provides similar functionality as TD's built in `Global OP Shortcuts` for any family of operators. You simply create a short alias for the operator, then you can access it from anywhere in your network via `op.NAPs.OPS("your_op_name")`. The "named" operator terminology is inspired by Q-Sys Named Components and Named Controls which allow users to access those elements externally, and, in fact, using NAPs allows users an easy way to expose operators to remote applications.
+NAPs provides similar functionality as TD's built in `Global OP Shortcuts` for any family of operators as well as for parameters. You simply create a short alias for the operator/parameter, then you can access it from anywhere in your network via `op.NAPs.OPS("your_op_name")` or `op.NAPs.PARS("your_par_name")`. The "named" operator/parameter terminology is inspired by Q-Sys Named Components and Named Controls which allow users to access those elements externally, and, in fact, using NAPs allows users an easy way to expose operators and parameters to remote applications.
 
 ## Using NAPs
 ### **Adding Operators**
@@ -40,7 +40,54 @@ You can also rename an operator from the interface by double clicking on its nam
 	
 	op.NAPs.RenameOperator("my_table", "MyTable")
 
+### **Adding Parameters**
+Add parameters is almost identical adding operators, except that the Python call would be `NameParameter()`. ParGroups, however, must be drag-dropped.
+
+### **Accessing Parameters**
+The method for accessing parameters is similar to operators, but is unique in its behavior. There is admittedly some weirdness here in order to make ParGroups play nice, and to actually extend the functional interaction with ParGroups by wrapping them in a `PAR` object. 
+
+For parameters: 
+
+	rad_x = op.NAPs.PARS("rad_x")
+		# print the value of `radx`
+	print(rax_x) 
+
+		# updating the value
+	rad_x.val = 1.3
+
+Note, however, that you cannot assign a value without accessing the `.val` attribute first. This is because the parameter is accessed through a function call. 
+
+		# incorrect:
+	op.NAPs.PARS("rad_x") = 0.5
+
+		# correct:
+	op.NAPs.PARS("rad_x").val = 0.5
+
+When working with the td.ParGroup object, you can access all its children parameteres by their typical names. For example, if you were to add the `radius` group: 
+
+	radius = op.NAPs.PARS("radius")
+	radx = radius.radx
+	rady = radius.rady
+	radz = radius.radz
+
+		# updating value is a little smooter here
+	
+	radius.radx = 1.0 	# perfectly legal
+
+You're also able to update all the children at once through the `.vals` attribute: 
+
+	radius = op.NAPs.PARS("radius")
+	radius.vals = [0.1, 0.5, 0.5]
+
 ### **Parameters**
+
+#### - **Initialize Page**
+
+
+`Init Named Operators` -> clears the named_operators dictionary of `{name:operator}` pairs
+
+`Init Named Parameters` -> clears the named_parameters dictionary of `{name:parameter}` pairs
+
 The component's parameters are sparse. The two most important are `Purge`, as mentioned, and `Init Named Operators`, which will simply clear the entire dictionary of `{name:operator}` pairs.
 
 All names are also added to a drop-down menu called in the `Operator` parameter. The `Path` parameter will reflect the full path to your selected operator. This is one easy way to get the path to your named operator, if so desired.

@@ -36,11 +36,10 @@ def onHoverStartGetAccept(comp, info):
 	if "hover_safe" in comp.tags:
 		pass
 	else:
-		
-		comp.par.leftborder = 1
-		comp.par.rightborder = 1
-		comp.par.topborder = 1
-		comp.par.bottomborder = 1
+		# comp.par.leftborder = 1
+		# comp.par.rightborder = 1
+		# comp.par.topborder = 1
+		# comp.par.bottomborder = 1
 		if comp.path.split('/')[-1] == 'named_pars_list':
 
 			if isinstance(dragItems[0], ParGroup) or isinstance(dragItems[0], Par):
@@ -79,13 +78,13 @@ def onHoverEnd(comp, info):
 	if "hover_safe" in comp.tags:
 		pass
 	else:
-		comp.par.borderar = 1
-		comp.par.borderab = 1
-		comp.par.borderag = 1
-		comp.par.leftborder = 0
-		comp.par.rightborder = 0
-		comp.par.topborder = 0
-		comp.par.bottomborder = 0
+		comp.par.borderar = 0.75
+		comp.par.borderab = 0.75
+		comp.par.borderag = 0.75
+		# comp.par.leftborder = 0
+		# comp.par.rightborder = 0
+		# comp.par.topborder = 0
+		# comp.par.bottomborder = 0
 	"""
 	Called when dragItems leave comp's hover area.
 
