@@ -3,7 +3,7 @@ import re
 import inspect
 # import copy
 
-class Par:
+class Pars:
 	'''
 		This wrapper is a wild ride
 
@@ -69,30 +69,37 @@ class Par:
 
 	@property
 	def vals(self):
-		return self._vals
+		print("vals")
+		self._values = self._vals
+		return self._values
 	
 	@vals.setter
-	def vals(self, value):
+	def set_vals(self, value):
+		print("setting value")
 		if not isinstance(value, list):
-			return Exception
+			print("not")
+			raise ValueError("Input value must be a list")
 		
 		if len(value) != len(self._vals):
-			return Exception
+			raise ValueError("Input list length is bad")
 		
 		for val, par in zip(value, self._vals):
+			print(par)
+			print(type(par))
 			par.val = val
 	
-	@vals.getter
-	def vals(self):
-		return [i.val for i in self._vals]
-		# if not isinstance(value, list):
-		# 	return Exception
-		
-		# if len(value) != len(self._vals):
-		# 	return Exception
-		
-		# for val, par in zip(value, self._vals):
-		# 	par.val = val
+	# @vals.getterY
+	# def vals(self):
+	# 	print("getting vals")
+	# 	return [i.val for i in self._vals]
+
+	@property
+	def valid(self):
+		return self._valid
+
+	@valid.getter
+	def valid(self):
+		return self.parameter.valid
 
 
 class NamedElements:
@@ -121,7 +128,13 @@ class NamedElements:
 		self.validName = r'^[A-z][A-z_0-9]*$'	# regex for testing op/par name validity
 		self.namedOperatorsDAT = op("named_operators")
 		self.namedParametersDAT = op("named_parameters")
+	@property
+	def Test(self):
+		print("HELLO TEST")
 	
+	@Test.setter
+	def Test(self, value):
+		print("HELLO {}".format(value))
 	# def __getattr__(self,_attrib):
 	# 	pass
 		# Ops and Par allow the user to get the path to the operator by calling its name
@@ -293,8 +306,8 @@ class NamedElements:
 		# first add the par group
 		# should add the owner object to dictionary, and owner path to DAT
 
-		newPAR = Par(self.name, self.parameter)
-		print(self.parameter.owner)
+		newPAR = Pars(self.name, self.parameter)
+
 		self.named_parameters.update({self.name:newPAR})
 		self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
 		'''
