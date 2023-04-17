@@ -3,95 +3,125 @@ import re
 import inspect
 # import copy
 
+
 class Pars:
 	'''
-		This wrapper is a wild ride
 
-		The purpose of this is to make it easy to work with both td.Par and td.ParGroup objects
-		from a single interface. This Par object is what is stored as the value in the named_parameters dictionary.
-
-		The reason both are wrapped is really just because it's easier to wrap anything Par-like
-
-		When the Par object is retrieved, it is called (see def Pars() below), it calls the __call__ method
-		If it wraps a single td.Par object, it simple returns that object,
-		and users can interact with it generally how they would a normal parameter
-		EXCEPT that to assign a value, they must explicitly call the .val attribute (this it is retrieved through a function call)
-
-		If it wraps a td.ParGroup object, then Par returns its self. Unlike regular ParGroup objects, the user can access attributes
-		So, for a radius parameter, users can call Par.radx, Par.rady, etc. 
-		They can also assign the way they normally would, e.g. Par.radx = 1.0
-
-		Users can also assign multiple values at once through the .vals attribute, e.g. Par.vals = [1.1, 2.4, 1.1]
 	'''
 	def __init__(self, name, parameter):
 
 		self.name = name
-		self.parameter = parameter
-		self.children = {}
-		if isinstance(self.parameter, ParGroup):
-			# print(parameter.val)
+		self.parameter = parameter	# the td.Par or td.ParGroup object being wrapped
+		self.children = {}			# if td.ParGroup, the individual td.Par's
+		# self._val
 
+			# mode-specific read-only states
+			# if ro_EXPORT == True, parameter is read-only when par mode is set to Expression
+		self.ro_EXPORT = False
+		self.ro_EXPRESSION = False
+		self.ro_BIND = False
+		self.ro_CONSTANT = False
+		self._ro_ANY = False
+
+		if isinstance(self.parameter, ParGroup):
+			# self._vals attribute if a ParGroup
 			self._vals = []
 
 			for i in range(len(self.parameter.val)):
-				p_name = self.parameter[i].name
-				p_val = self.parameter[i].val
-				setattr(self, p_name, self.parameter[i] )
-
+					# self.children allows look-up of td.Par members via name
 				self.children.update({self.parameter[i].name:self.parameter[i]})
 				self._vals.append(self.parameter[i])
-
-
-				# setattr(self, p_name, self.parameter[i])
-				# setattr(self, p_name, property(self._get_par_val(p_name), self._set_par_val(p_name, p_val)))
-	def __setattr__(self, name, value):
-		if inspect.stack()[1].function == '__init__':
-			super.__setattr__(self, name, value)
-		else:
-			if name in self.children.keys():
-				self.children[name].val = value
-		
-	def _set_par_val(self, par_name, par_val):
-		self.children[par_name] = par_val
 	
-	def _get_par_val(self, par_name):
-		return self.children[par_name]
-	
-	def __call__(self):
+	# def __call__(self):
 
-		if isinstance(self.parameter, Par):
-			return self.parameter
-		else:
-			return self
+	# 	if isinstance(self.parameter, Par):
+	# 		return self.parameter
+	# 	else:
+	# 		return self
 
+		# using square brackets to get/set td.Par members
 	def __getitem__(self, _name):
+
+		if not _name in self.children.keys():
+			raise AttributeError(f'{_name} is not a Named Parameter')
+			# returns the td.Par object
 		return self.children[_name]
+
+	def __setitem__(self, _name, _value):
+
+		if not _name in self.children.keys():
+			raise AttributeError(f'{_name} is not a Named Parameter')
+		
+			# check if read-only
+		parmode = self.children[_name].mode.name
+		readonly = getattr(self, 'ro_' + parmode)
+
+		if readonly or self._ro_ANY:
+			raise TypeError(f'{_name} is a read-only parameter')
+
+		self.children[_name].val = _value
+	
+	def setSelectiveReadOnly(self, ro_modes: dict):
+		for key, val in ro_modes.items():
+			if key == "any":
+				self._ro_ANY = val
+			else:
+				ro_mode = 'ro_' + key.upper()
+				setattr(self, ro_mode, val)
+
+	
+	@property
+	def ro_ANY(self):
+		return self._ro_ANY
+	
+	@ro_ANY.setter
+	def ro_ANY(self, value: bool):
+		if not type(value) == bool:
+			raise TypeError('Read Only descriptions must be of type <bool>')
+		self._ro_ANY = value
+		op("named_pars_list").par.reset.pulse()
 
 	@property
 	def vals(self):
-		print("vals")
-		self._values = self._vals
-		return self._values
+		return self._vals
 	
 	@vals.setter
-	def set_vals(self, value):
-		print("setting value")
-		if not isinstance(value, list):
-			print("not")
-			raise ValueError("Input value must be a list")
+	def vals(self, value: list):
+
+		# if not isinstance(value, list):
+		# 	raise ValueError("Input value must be a list.")
 		
 		if len(value) != len(self._vals):
-			raise ValueError("Input list length is bad")
+			raise ValueError("Input list length is bad.")
+		
+		for par in self._vals:
+			parmode = par.mode.name
+			readonly = getattr(self, 'ro_' + parmode)
+			if readonly:
+				raise TypeError(f'At least one member of {self.name} is a read-only parameter.')
+		
+		if self._ro_ANY:
+			raise TypeError(f'{self.name} is a read-only parameter')
 		
 		for val, par in zip(value, self._vals):
-			print(par)
-			print(type(par))
 			par.val = val
+
+	@property
+	def val(self):
+		return self.parameter.val
 	
-	# @vals.getterY
-	# def vals(self):
-	# 	print("getting vals")
-	# 	return [i.val for i in self._vals]
+	@val.setter
+	def val(self, value):
+			# get mode of parameter
+			# and get the corresponding ro_ attribute
+		parmode = self.parameter.mode.name
+		readonly = getattr(self, 'ro_' + parmode)
+
+			# if the mode or any mode is readonly, raise exception
+		if readonly or self._ro_ANY:
+			raise TypeError(f'{self.name} is a read-only parameter')
+		else:
+			self.parameter.val = value
 
 	@property
 	def valid(self):
@@ -128,16 +158,7 @@ class NamedElements:
 		self.validName = r'^[A-z][A-z_0-9]*$'	# regex for testing op/par name validity
 		self.namedOperatorsDAT = op("named_operators")
 		self.namedParametersDAT = op("named_parameters")
-	@property
-	def Test(self):
-		print("HELLO TEST")
-	
-	@Test.setter
-	def Test(self, value):
-		print("HELLO {}".format(value))
-	# def __getattr__(self,_attrib):
-	# 	pass
-		# Ops and Par allow the user to get the path to the operator by calling its name
+
 	def Ops(self, op_name):
 			# called to access an operator object via op.NAPs.Ops(op_name).<attribute> | <method>
 		try:
@@ -147,11 +168,12 @@ class NamedElements:
 		
 	def Pars(self, par_name):
 		try:
-			return self.named_parameters[par_name]()#self.named_parameters[par_name]
+			return self.named_parameters[par_name]
 		except:
 			return None
 
-		# clear the op/par dicts and associated tables
+	
+	# clear the op/par dicts and associated tables
 	def InitNamedOperatorsDict(self):
 		op.NAPs.storage["named_operators"].clear()
 		self.namedOperatorsDAT.clear()
@@ -302,38 +324,24 @@ class NamedElements:
 		if not valid:
 			return -1
 		
-		
 		# first add the par group
 		# should add the owner object to dictionary, and owner path to DAT
 
-		newPAR = Pars(self.name, self.parameter)
+		ParsWrapper = Pars(self.name, self.parameter)
+		ro_modes = {
+				"any" : self.owner.par.Ropars.val,
+				"expression" : self.owner.par.Roexpression.val,
+				"export" : self.owner.par.Roexport.val
+				}
 
-		self.named_parameters.update({self.name:newPAR})
-		self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
-		'''
-		self.named_parameters.update({self.name:self.parameter})
-		self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
-		'''
 
-		# then add each par in the group
-		'''
-		if isinstance(self.parameter, ParGroup):
-			# print(parameter.val)
-			for i in range(len(self.parameter.val)):
-				param = self.parameter[i]
-				name = copy.copy(self.name)
-				name += ("_" + param.name)
-				self.named_parameters.update({name:newPAR})
-				print(self.named_parameters[name])
-				self.namedParametersDAT.appendRow([name, self.parameter.owner])
-			print("pargroup")
-		'''
-		# if valid:
-		# 	self.named_parameters.update({name:self.parameter})
-		# 	self.namedParametersDAT.appendRow([name])
-		# 	return 1
-		# else:
-		# 	return -1
+		ParsWrapper.setSelectiveReadOnly(ro_modes)
+		# if self.owner.par.Ropars:
+		# 	ParsWrapper.ro_ANY = True
+
+		self.named_parameters.update({self.name:ParsWrapper})
+		self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
+
 	def RenameParameter(self, par_curr_name, par_new_name):
 		# get the parameter object from dictionary
 
