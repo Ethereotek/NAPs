@@ -4,5 +4,11 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.autoComplete.extraPaths": [],
+		"python.linting.pylintArgs": [
+			"--ignored-modules=op"
+		],
+		"python.analysis.extraPaths": []
+	}
 }

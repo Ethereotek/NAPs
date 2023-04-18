@@ -8,10 +8,10 @@ class Pars:
 	'''
 
 	'''
-	def __init__(self, name, parameter):
+	def __init__(self, name: str, parameter):
 
 		self.name = name
-		self.parameter = parameter	# the td.Par or td.ParGroup object being wrapped
+		self.parameter = parameter
 		self.children = {}			# if td.ParGroup, the individual td.Par's
 		# self._val
 
@@ -23,31 +23,23 @@ class Pars:
 		self.ro_CONSTANT = False
 		self._ro_ANY = False
 
-		if isinstance(self.parameter, ParGroup):
-			# self._vals attribute if a ParGroup
+		if isinstance(self.parameter, ParGroup): 
+			# This handles accessing child Par objects and their values
 			self._vals = []
 
 			for i in range(len(self.parameter.val)):
-					# self.children allows look-up of td.Par members via name
 				self.children.update({self.parameter[i].name:self.parameter[i]})
 				self._vals.append(self.parameter[i])
 	
-	# def __call__(self):
-
-	# 	if isinstance(self.parameter, Par):
-	# 		return self.parameter
-	# 	else:
-	# 		return self
-
 		# using square brackets to get/set td.Par members
-	def __getitem__(self, _name):
-
+	def __getitem__(self, _name: str):
+			# returns the td.Par object
 		if not _name in self.children.keys():
 			raise AttributeError(f'{_name} is not a Named Parameter')
-			# returns the td.Par object
+			
 		return self.children[_name]
 
-	def __setitem__(self, _name, _value):
+	def __setitem__(self, _name: str, _value):
 
 		if not _name in self.children.keys():
 			raise AttributeError(f'{_name} is not a Named Parameter')
@@ -61,7 +53,8 @@ class Pars:
 
 		self.children[_name].val = _value
 	
-	def setSelectiveReadOnly(self, ro_modes: dict):
+	def setSelectiveReadOnly(self, ro_modes: dict[str,bool]):
+		# set multiple mode-based read-only attributes with a dict
 		for key, val in ro_modes.items():
 			if key == "any":
 				self._ro_ANY = val
@@ -69,7 +62,6 @@ class Pars:
 				ro_mode = 'ro_' + key.upper()
 				setattr(self, ro_mode, val)
 
-	
 	@property
 	def ro_ANY(self):
 		return self._ro_ANY
@@ -79,6 +71,7 @@ class Pars:
 		if not type(value) == bool:
 			raise TypeError('Read Only descriptions must be of type <bool>')
 		self._ro_ANY = value
+
 		op("named_pars_list").par.reset.pulse()
 
 	@property
@@ -108,7 +101,7 @@ class Pars:
 
 	@property
 	def val(self):
-		return self.parameter.val
+		return self.parameter.eval()
 	
 	@val.setter
 	def val(self, value):
@@ -236,7 +229,6 @@ class NamedElements:
 		button = args["button"]
 
 		if button != "OK":
-			print("Goodbye")
 			return -1
 		
 			# it's possible to call self.NameOperator here instead
