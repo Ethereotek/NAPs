@@ -275,13 +275,28 @@ class NamedElements:
 		valid = self.validateParameterAddition()
 
 		if valid:
-				# add to dict and update table for user viewability AND to populate menu
-			self.named_parameters.update({name:parameter})
-			self.namedParametersDAT.appendRow([name, parameter.owner])
+			ParsWrapper = Pars(self.name, self.parameter)
+			ro_modes = {
+					"any" : self.owner.par.Ropars.val,
+					"expression" : self.owner.par.Roexpression.val,
+					"export" : self.owner.par.Roexport.val
+					}
+
+
+			ParsWrapper.setSelectiveReadOnly(ro_modes)
+			# if self.owner.par.Ropars:
+			# 	ParsWrapper.ro_ANY = True
+
+			self.named_parameters.update({self.name:ParsWrapper})
+			self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
+			# self.named_parameters.update({name:parameter})
+			# self.namedParametersDAT.appendRow([name, parameter.owner])
 			return 1
 		
 		else:
 			return -1
+		
+
 
 	def AddNamedParameter(self, args):
 		parameter = args["details"]["parameter"]
@@ -316,9 +331,14 @@ class NamedElements:
 		if not valid:
 			return -1
 		
+
+		self.NameParameter(self.parameter, self.name)
+
+		'''
+		######### USE self.NameParameter() instead
+
 		# first add the par group
 		# should add the owner object to dictionary, and owner path to DAT
-
 		ParsWrapper = Pars(self.name, self.parameter)
 		ro_modes = {
 				"any" : self.owner.par.Ropars.val,
@@ -333,6 +353,7 @@ class NamedElements:
 
 		self.named_parameters.update({self.name:ParsWrapper})
 		self.namedParametersDAT.appendRow([self.name, self.parameter.owner])
+		'''
 
 	def RenameParameter(self, par_curr_name, par_new_name):
 		# get the parameter object from dictionary
