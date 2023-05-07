@@ -44,11 +44,11 @@ You can also rename an operator from the interface by double clicking on its nam
 Adding parameters is almost identical to adding operators, except that the Python call would be `NameParameter()`. ParGroups, however, must be drag-dropped.
 
 ### **Accessing Parameters**
-The method for accessing parameters is similar to operators, but is unique in its behavior. There is admittedly some weirdness here in order to make ParGroups play nice, and to actually extend the functional interaction with both td.ParGroup's and tx.Par's by wrapping them in a `Pars` object. 
+The method for accessing parameters is similar to operators, but is unique in its behavior. There is admittedly some weirdness here in order to make ParGroups play nice, and to actually extend the functional interaction with both td.ParGroup's and td.Par's by wrapping them in a `Pars` object. 
 
 For parameters: 
 
-	rad_x = op.NAPs.PARS("rad_x")
+	rad_x = op.NAPs.Pars("rad_x")
 		# print the value of `radx`
 	print(rax_x.val) 
 
@@ -62,7 +62,7 @@ Note, however, that you are *not* interacting with an td.Par object. To access a
 
 When working with the td.ParGroup object, you can access all its children parameters by their typical names using squar-bracket notation. For example, if you were to add the `radius` group: 
 
-	radius = op.NAPs.PARS("radius")
+	radius = op.NAPs.Pars("radius")
 	radx = radius["radx"]
 	rady = radius["rady"]
 	radz = radius["radz"]
@@ -75,7 +75,7 @@ Note that the square-bracket does return the `td.Par` object.
 
 You're also able to update all the children at once through the `.vals` attribute: 
 
-	radius = op.NAPs.PARS("radius")
+	radius = op.NAPs.Pars("radius")
 	radius.vals = [0.1, 0.5, 0.5]
 
 ### **Parameters**
